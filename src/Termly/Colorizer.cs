@@ -94,9 +94,36 @@ public static partial class Colorizer
         return InColor(text, foreground, background);
     }
 
+    public static void Write(this TextWriter writer, ConsoleColor foreground, string value)
+    {
+        writer.Write(value.InColor(foreground));
+    }
+
+    public static void Write(this TextWriter writer, ConsoleColor foreground, ConsoleColor background, string value)
+    {
+        writer.Write(value.InColor(foreground, background));
+    }
+
+    public static void Write(this TextWriter writer, ConsoleColor foreground,
+        [InterpolatedStringHandlerArgument("foreground")] ref InterpolatedStringHandler colorHandler)
+    {
+        writer.Write(colorHandler.ToStringAndClear());
+    }
+
+    public static void Write(this TextWriter writer, ConsoleColor foreground, ConsoleColor background,
+        [InterpolatedStringHandlerArgument("foreground", "background")] ref InterpolatedStringHandler colorHandler)
+    {
+        writer.Write(colorHandler.ToStringAndClear());
+    }
+
     public static void WriteLine(this TextWriter writer, ConsoleColor foreground, string value)
     {
         writer.WriteLine(value.InColor(foreground));
+    }
+
+    public static void WriteLine(this TextWriter writer, ConsoleColor foreground, ConsoleColor background, string value)
+    {
+        writer.WriteLine(value.InColor(foreground, background));
     }
 
     public static void WriteLine(this TextWriter writer, ConsoleColor foreground,
