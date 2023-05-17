@@ -2,7 +2,6 @@
 
 using System;
 using System.IO;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 public static partial class Colorizer
@@ -27,7 +26,7 @@ public static partial class Colorizer
             "\x1b[35;1m",   /// <see cref="ConsoleColor.Magenta"/>
             "\x1b[33;1m",   /// <see cref="ConsoleColor.Yellow"/>
             "\x1b[37;1m",   /// <see cref="ConsoleColor.White"/>
-        };
+    };
 
     private static readonly string[] BackgroundCodes =
     {
@@ -47,14 +46,11 @@ public static partial class Colorizer
             "\x1b[45;1m",   /// <see cref="ConsoleColor.Magenta"/>
             "\x1b[43;1m",   /// <see cref="ConsoleColor.Yellow"/>
             "\x1b[47;1m",   /// <see cref="ConsoleColor.White"/>
-        };
+    };
 
-    private const int STD_INPUT_HANDLE = -10;
     private const int STD_OUTPUT_HANDLE = -11;
     private const int STD_ERROR_HANDLE = -12;
     private const uint ENABLE_VIRTUAL_TERMINAL_PROCESSING = 0x0004;
-    private const uint DISABLE_NEWLINE_AUTO_RETURN = 0x0008;
-    private const uint ENABLE_VIRTUAL_TERMINAL_INPUT = 0x0200;
 
     [DllImport("kernel32.dll")]
     private static extern bool GetConsoleMode(IntPtr hConsoleHandle, out uint lpMode);
@@ -64,6 +60,9 @@ public static partial class Colorizer
     private static extern IntPtr GetStdHandle(int nStdHandle);
 
     private static readonly bool isEnabled;
+    private static readonly bool isEnabledOut;
+    private static readonly bool isEnabledErr;
+
 
     static Colorizer()
     {
@@ -71,27 +70,32 @@ public static partial class Colorizer
 
         if (isEnabled && RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
-            isEnabled = TryEnableForDevice(STD_OUTPUT_HANDLE) || TryEnableForDevice(STD_ERROR_HANDLE);
+            isEnabledOut = TryEnableForDevice(STD_OUTPUT_HANDLE);
+            isEnabledErr = TryEnableForDevice(STD_ERROR_HANDLE);
+            isEnabled = isEnabledOut || isEnabledErr;
         }
     }
 
-    public static string InColor<T>(this T obj, ConsoleColor foreground, ConsoleColor? background = default)
+    public static string? InColor<T>(this T obj, ConsoleColor foreground, ConsoleColor? background = default)
     {
         var text = obj?.ToString();
         if (!isEnabled || text is null || text.Length == 0)
             return text;
 
-        return InColor(text, foreground, background);
+        return SpanInColor(text, foreground, background);
     }
 
-    public static string InColor<T>(this T obj, string format, ConsoleColor foreground, ConsoleColor? background = default)
+    public static string? InColor<T>(this T obj, string? format, ConsoleColor foreground, ConsoleColor? background = default)
+        where T : struct, IFormattable => InColor(obj, format, null, foreground, background);
+
+    public static string? InColor<T>(this T obj, string? format, IFormatProvider? formatProvider, ConsoleColor foreground, ConsoleColor? background = default)
         where T : struct, IFormattable
     {
-        var text = obj.ToString(format, null);
+        var text = obj.ToString(format, formatProvider);
         if (!isEnabled || text is null || text.Length == 0)
             return text;
 
-        return InColor(text, foreground, background);
+        return SpanInColor(text, foreground, background);
     }
 
     public static void Write(this TextWriter writer, ConsoleColor foreground, string value)
@@ -104,18 +108,6 @@ public static partial class Colorizer
         writer.Write(value.InColor(foreground, background));
     }
 
-    public static void Write(this TextWriter writer, ConsoleColor foreground,
-        [InterpolatedStringHandlerArgument("foreground")] ref InterpolatedStringHandler colorHandler)
-    {
-        writer.Write(colorHandler.ToStringAndClear());
-    }
-
-    public static void Write(this TextWriter writer, ConsoleColor foreground, ConsoleColor background,
-        [InterpolatedStringHandlerArgument("foreground", "background")] ref InterpolatedStringHandler colorHandler)
-    {
-        writer.Write(colorHandler.ToStringAndClear());
-    }
-
     public static void WriteLine(this TextWriter writer, ConsoleColor foreground, string value)
     {
         writer.WriteLine(value.InColor(foreground));
@@ -126,19 +118,17 @@ public static partial class Colorizer
         writer.WriteLine(value.InColor(foreground, background));
     }
 
-    public static void WriteLine(this TextWriter writer, ConsoleColor foreground,
-        [InterpolatedStringHandlerArgument("foreground")] ref InterpolatedStringHandler colorHandler)
+    private static bool IsEnabledFor(TextWriter? writer = default)
     {
-        writer.WriteLine(colorHandler.ToStringAndClear());
+        return writer switch
+        {
+            var x when x == Console.Out => isEnabledOut,
+            var x when x == Console.Error => isEnabledErr,
+            _ => false
+        };
     }
 
-    public static void WriteLine(this TextWriter writer, ConsoleColor foreground, ConsoleColor background,
-        [InterpolatedStringHandlerArgument("foreground", "background")] ref InterpolatedStringHandler colorHandler)
-    {
-        writer.WriteLine(colorHandler.ToStringAndClear());
-    }
-
-    private static string InColor(string text, ConsoleColor foreground, ConsoleColor? background)
+    private static string SpanInColor(ReadOnlySpan<char> text, ConsoleColor foreground, ConsoleColor? background)
     {
         if (background is not null)
             return String.Concat(ForegroundCodes[(int)foreground], BackgroundCodes[(int)background.Value], text, ResetCode);
