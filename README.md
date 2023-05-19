@@ -28,6 +28,12 @@ The extension methods `Write` and `WriteLine` are used to colorize interpolated 
 Console.Out.WriteLine(ConsoleColor.DarkYellow, $"Parameters Count: {parameters.Statistics.ParametersCount}");
 ```
 
+There are also methods `WriteInColor` and `WriteLineInColor` which allow you to colorize each interpolated string parameter independently.
+
+```csharp
+Console.Out.WriteLine($"Count: {count:blue} Total: {total:white|green}");
+```
+
 Background colors are supported too.
 
 ```csharp
