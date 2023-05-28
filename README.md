@@ -17,12 +17,15 @@ private static void HandleContextLog(object sender, LoggingEventArgs e)
 {
     if (e.Kind > ChannelMessageKind.Trace)
     {
+        // using InColor method
         Console.Error.WriteLine($"{e.Source.InColor(ConsoleColor.Gray)}: {e.RawMessage.InColor(ConsoleColor.DarkBlue)}");
+        // using WriteLineInColor method
+        Console.Error.WriteLineInColor($"{e.Source:gray}: {e.RawMessage:darkBlue}");
     }
 }
 ```
 
-The extension methods `Write` and `WriteLine` are used to colorize interpolated strings.
+The extension methods `Write` and `WriteLine` are used to colorize interpolated string parameters.
 
 ```csharp
 Console.Out.WriteLine(ConsoleColor.DarkYellow, $"Parameters Count: {parameters.Statistics.ParametersCount}");
@@ -38,4 +41,5 @@ Background colors are supported too.
 
 ```csharp
 Console.Error.WriteLine("ALERT".InColor(foreground: ConsoleColor.Black, background: ConsoleColor.Red));
+Console.Error.WriteLineInColor($"{"ALERT":black|red}");
 ```
