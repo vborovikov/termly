@@ -31,7 +31,6 @@ using (var percentage = new ConsoleStatus(indent: true))
     DoWork(progress);
     percentage.Write("");
 }
-Console.Error.WriteLine();
 
 using (var progressBar = new ConsoleProgressBar { Block = ConsoleProgressBar.Square, Width = 20 })
 {
