@@ -1,4 +1,7 @@
-﻿using Termly;
+﻿using System.Text;
+using Termly;
+
+Console.OutputEncoding = Encoding.Default;
 
 Console.Out.WriteLineInColor($"{"Hello":blue}, {"World":white|green}!");
 Console.Error.WriteLine(ConsoleColor.Red, $"{"Hello":x}, {"World":x}!");
@@ -8,7 +11,29 @@ using (var progressTwirl = new ConsoleProgressTwirl())
     DoWork(progressTwirl);
 }
 
+using (var progressTwirl = new ConsoleProgressTwirl { Style = ConsoleProgressTwirl.Braille, Done = '\u2713' })
+using (var status = new ConsoleStatus(indent: true))
+{
+    status.Write(ConsoleColor.Blue, "Doing work...");
+    DoWork(progressTwirl);
+    status.Write(ConsoleColor.Green, "Done!");
+}
+Console.Error.WriteLine();
+
 using (var progressBar = new ConsoleProgressBar())
+using (var percentage = new ConsoleStatus(indent: true))
+{
+    var progress = new Progress<int>(value =>
+    {
+        progressBar.Report(value);
+        percentage.Write(value.ToString());
+    });
+    DoWork(progress);
+    percentage.Write("");
+}
+Console.Error.WriteLine();
+
+using (var progressBar = new ConsoleProgressBar { Block = ConsoleProgressBar.Square, Width = 20 })
 {
     DoWork(progressBar);
 }

@@ -2,144 +2,111 @@
 
 using System;
 
-public abstract class ConsoleProgress : IProgress<int>, IDisposable
+public abstract class ConsoleProgress : ConsoleLine, IProgress<int>, IDisposable
 {
-    protected const char Backspace = '\b';
-
-    protected ConsoleProgress()
+    protected ConsoleProgress(bool indent) : base(indent)
     {
-        this.IsEnabled = !Console.IsErrorRedirected;
         if (this.IsEnabled)
         {
             Console.CursorVisible = false;
-        }
-    }
-
-    public bool IsEnabled { get; }
-
-    public void Dispose()
-    {
-        if (this.IsEnabled)
-        {
-            Clear();
-            Console.CursorVisible = true;
+            Report(default);
         }
     }
 
     public void Report(int value)
     {
-        if (this.IsEnabled)
-        {
-            Update(value);
-        }
-    }
-
-    protected abstract void Update(int value);
-
-    protected abstract void Clear();
-}
-
-public class ConsoleProgressTwirl : ConsoleProgress
-{
-    private const string DefaultTwirl = @"-\|/";
-
-    private readonly string twirl = DefaultTwirl;
-
-    public ConsoleProgressTwirl()
-    {
-    }
-
-    public ConsoleProgressTwirl(string twirl)
-    {
-        this.twirl = twirl;
-    }
-
-    protected override void Update(int value)
-    {
-        Console.Error.Write(Backspace);
-        Console.Error.Write(this.twirl[value % this.twirl.Length]);
+        Update(con => Update(con, value));
     }
 
     protected override void Clear()
     {
-        Console.Error.Write(Backspace);
-        Console.Error.Write(' ');
-        Console.Error.Write(Backspace);
+        base.Clear();
+        Console.CursorVisible = true;
+    }
+
+    protected abstract void Update(TextWriter con, int value);
+}
+
+public class ConsoleProgressTwirl : ConsoleProgress
+{
+    private const string DefaultStyle = @"-\|/";
+    public const string Braille = "⣾⣽⣻⢿⡿⣟⣯⣷";
+    public const string Clock = "╷┐╴┘╵└╶┌";
+
+    public ConsoleProgressTwirl(bool indent = false) : base(indent) { }
+
+    protected override int MaxWidth => 1;
+
+    public string Style { get; init; } = DefaultStyle;
+
+    public char Done { get; init; } = ' ';
+
+    protected override void Update(TextWriter con, int value)
+    {
+        con.Write(this.Style[value % this.Style.Length]);
+    }
+
+    protected override void Clear()
+    {
+        if (char.IsWhiteSpace(this.Done))
+        {
+            base.Clear();
+        }
+        else
+        {
+            Update(con => con.Write(this.Done));
+        }
     }
 }
 
 public class ConsoleProgressBar : ConsoleProgress
 {
-    public const char DefaultBlock = '■';
-    public const char DefaultSpot = ' ';
-
-    private readonly char block = DefaultBlock;
-    private readonly char spot = DefaultSpot;
-    private readonly bool displayBorder = true;
-    private readonly bool displayPercent = true;
-    private readonly string backspace;
-
-    public ConsoleProgressBar() : base()
+    public readonly record struct BlockStyle(char Filling, char Padding = ' ');
+    public readonly record struct BorderStyle(char Left, char Right)
     {
-        this.backspace = new(Backspace, 17);
+        public int Width => (this.Left != default ? 1 : 0) + (this.Right != default ? 1 : 0);
     }
 
-    public ConsoleProgressBar(char barBlock, char barSpot = DefaultSpot, bool displayBorder = true, bool displayPercent = true)
-        : base()
+    public static readonly BlockStyle DefaultBlock = new('#', '-');
+    public static readonly BorderStyle DefaultBorder = new('[', ']');
+    public static readonly BlockStyle Square = new('■');
+    public static readonly BorderStyle NoBorder = default;
+
+    public ConsoleProgressBar(bool indent = false) : base(indent)
     {
-        this.block = barBlock;
-        this.spot = barSpot;
-        this.displayBorder = displayBorder;
-        this.displayPercent = displayPercent;
-        var backspaceLength = 10;
-        if (displayBorder)
-        {
-            backspaceLength += 2;
-        }
-        if (displayPercent)
-        {
-            backspaceLength += 5;
-        }
-        this.backspace = new(Backspace, backspaceLength);
     }
 
-    protected override void Update(int value)
-    {
-        Console.Error.Write(backspace);
+    protected override int MaxWidth => this.Border.Width + this.Width;
 
-        if (this.displayBorder)
+    public BlockStyle Block { get; init; } = DefaultBlock;
+
+    public BorderStyle Border { get; init; } = DefaultBorder;
+
+    public int Width { get; init; } = 10;
+
+    protected override void Update(TextWriter con, int value)
+    {
+        if (this.Border.Left != default)
         {
-            Console.Error.Write("[");
+            con.Write(this.Border.Left);
         }
 
-        var p = (int)((value / 10f) + .5f);
-        for (var i = 0; i < 10; ++i)
+        var p = (int)MathF.Ceiling(this.Width * value / (float)100);
+        for (var i = 0; i < this.Width; ++i)
         {
-            if (i >= p)
+            if (i < p)
             {
-                Console.Error.Write(this.spot);
+                con.Write(this.Block.Filling);
             }
             else
             {
-                Console.Error.Write(this.block);
+                con.Write(this.Block.Padding);
             }
         }
 
-        if (this.displayBorder)
+        if (this.Border.Right != default)
         {
-            Console.Error.Write("]");
+            con.Write(this.Border.Right);
         }
-
-        if (this.displayPercent)
-        {
-            Console.Error.Write(" {0,3:##0}%", value);
-        }
-    }
-
-    protected override void Clear()
-    {
-        Console.Error.Write(this.backspace);
-        Console.Error.Write(new string(' ', this.backspace.Length));
-        Console.Error.Write(this.backspace);
     }
 }
