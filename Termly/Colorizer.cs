@@ -100,10 +100,19 @@ public static partial class Colorizer
     {
         isEnabled = Environment.GetEnvironmentVariable("NO_COLOR") is null;
 
-        if (isEnabled && RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        if (isEnabled)
         {
-            isEnabledOut = TryEnableForDevice(STD_OUTPUT_HANDLE);
-            isEnabledErr = TryEnableForDevice(STD_ERROR_HANDLE);
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                isEnabledOut = TryEnableForDevice(STD_OUTPUT_HANDLE);
+                isEnabledErr = TryEnableForDevice(STD_ERROR_HANDLE);
+            }
+            else
+            {
+                isEnabledOut = !Console.IsOutputRedirected;
+                isEnabledErr = !Console.IsErrorRedirected;
+            }
+
             isEnabled = isEnabledOut || isEnabledErr;
         }
     }
