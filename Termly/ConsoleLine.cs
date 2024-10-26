@@ -18,6 +18,9 @@ public abstract class ConsoleLine : IDisposable
 
     public bool IsEnabled { get; }
 
+    //todo: use instead of indent
+    public (int Left, int Right) Margin { get; init; }
+
     protected abstract int MaxWidth { get; }
 
     public void Dispose()
