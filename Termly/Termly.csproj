@@ -4,6 +4,7 @@
     <TargetFramework>net6.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
     <Title>Termly</Title>
     <Description>Terminal colorizer for .NET console apps</Description>
   </PropertyGroup>

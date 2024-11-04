@@ -3,23 +3,55 @@
 public abstract class ConsoleLine : IDisposable
 {
     private static readonly string Whitespace = new(' ', 80);
+    private static readonly List<ConsoleLine> lines = [];
+    private static SpinLock spinLock = new();
 
     private readonly (int Left, int Top) position;
-    private SpinLock spinLock = new();
 
     protected ConsoleLine()
     {
         this.IsEnabled = !Console.IsErrorRedirected;
         if (this.IsEnabled)
         {
-            //todo: have global registry of currently occupied positions on the line?
-            this.position = (Console.CursorLeft, Console.CursorTop);
+            this.position = GetPosition(this);
+        }
+    }
+
+    private static (int Left, int Top) GetPosition(ConsoleLine line)
+    {
+        var lockTaken = false;
+        try
+        {
+            spinLock.Enter(ref lockTaken);
+            var cursorPosition = (Console.CursorLeft, Console.CursorTop);
+
+            if (lines.Count > 0)
+            {
+                cursorPosition.CursorLeft = 0;
+                foreach (var other in lines)
+                {
+                    if (other.position.Top == cursorPosition.CursorTop)
+                    {
+                        cursorPosition.CursorLeft += 
+                            other.position.Left + other.Margin.Left + other.MaxWidth + other.Margin.Right;
+                    }
+                }
+            }
+
+            lines.Add(line);
+            return cursorPosition;
+        }
+        finally
+        {
+            if (lockTaken)
+            {
+                spinLock.Exit();
+            }
         }
     }
 
     public bool IsEnabled { get; }
 
-    //todo: use instead of indent
     public (int Left, int Right) Margin { get; init; }
 
     protected abstract int MaxWidth { get; }
@@ -29,6 +61,7 @@ public abstract class ConsoleLine : IDisposable
         if (this.IsEnabled)
         {
             Clear();
+            lines.Remove(this);
         }
     }
 
@@ -45,13 +78,13 @@ public abstract class ConsoleLine : IDisposable
         var lockTaken = false;
         try
         {
-            this.spinLock.Enter(ref lockTaken);
-            Console.SetCursorPosition(this.position.Left - this.Margin.Left, this.position.Top);
+            spinLock.Enter(ref lockTaken);
+            Console.SetCursorPosition(this.position.Left, this.position.Top);
 
             if (clear)
             {
                 Clear(Console.Error, this.MaxWidth + this.Margin.Left + this.Margin.Right);
-                Console.SetCursorPosition(this.position.Left, this.position.Top);
+                Console.SetCursorPosition(this.position.Left + this.Margin.Left, this.position.Top);
             }
             update(Console.Error);
         }
@@ -59,7 +92,7 @@ public abstract class ConsoleLine : IDisposable
         {
             if (lockTaken)
             {
-                this.spinLock.Exit();
+                spinLock.Exit();
             }
         }
     }
