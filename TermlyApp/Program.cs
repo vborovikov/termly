@@ -12,7 +12,7 @@ using (var progressTwirl = new ConsoleProgressTwirl())
 }
 
 using (var progressTwirl = new ConsoleProgressTwirl { Style = ConsoleProgressTwirl.Braille, Done = '\u2713' })
-using (var status = new ConsoleStatus(indent: true))
+using (var status = new ConsoleStatus())
 {
     status.Write(ConsoleColor.Blue, "Doing work...");
     DoWork(progressTwirl);
@@ -21,7 +21,7 @@ using (var status = new ConsoleStatus(indent: true))
 Console.Error.WriteLine();
 
 using (var progressBar = new ConsoleProgressBar())
-using (var percentage = new ConsoleStatus(indent: true))
+using (var percentage = new ConsoleStatus())
 {
     var progress = new Progress<int>(value =>
     {

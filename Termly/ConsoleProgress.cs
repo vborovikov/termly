@@ -8,7 +8,7 @@ public abstract class ConsoleProgress<T> : ConsoleLine, IProgress<T>, IDisposabl
     protected const int MaxPercent = 100;
     private readonly Func<T, int> percentage;
 
-    protected ConsoleProgress(Func<T, int> percentage, bool indent) : base(indent)
+    protected ConsoleProgress(Func<T, int> percentage)
     {
         this.percentage = percentage;
         if (this.IsEnabled)
@@ -39,7 +39,7 @@ public class ConsoleProgressTwirl<T> : ConsoleProgress<T>
     public const string Braille = "⣾⣽⣻⢿⡿⣟⣯⣷";
     public const string Clock = "╷┐╴┘╵└╶┌";
 
-    public ConsoleProgressTwirl(Func<T, int> percentage, bool indent = false) : base(percentage, indent) { }
+    public ConsoleProgressTwirl(Func<T, int> percentage) : base(percentage) { }
 
     protected override int MaxWidth => 1;
 
@@ -67,7 +67,7 @@ public class ConsoleProgressTwirl<T> : ConsoleProgress<T>
 
 public class ConsoleProgressTwirl : ConsoleProgressTwirl<int>
 {
-    public ConsoleProgressTwirl(bool indent = false) : base(p => Math.Clamp(p, MinPercent, MaxPercent), indent) { }
+    public ConsoleProgressTwirl() : base(p => Math.Clamp(p, MinPercent, MaxPercent)) { }
 }
 
 public class ConsoleProgressBar<T> : ConsoleProgress<T>
@@ -84,7 +84,7 @@ public class ConsoleProgressBar<T> : ConsoleProgress<T>
     public static readonly BlockStyle Square = new('■');
     public static readonly BorderStyle NoBorder = default;
 
-    public ConsoleProgressBar(Func<T, int> percentage, bool indent = false) : base(percentage, indent) { }
+    public ConsoleProgressBar(Func<T, int> percentage) : base(percentage) { }
 
     protected override int MaxWidth => this.Border.Width + this.Width;
 
@@ -123,6 +123,6 @@ public class ConsoleProgressBar<T> : ConsoleProgress<T>
 
 public class ConsoleProgressBar : ConsoleProgressBar<int>
 {
-    public ConsoleProgressBar(bool indent = false) : base(p => Math.Clamp(p, MinPercent, MaxPercent), indent) { }
+    public ConsoleProgressBar() : base(p => Math.Clamp(p, MinPercent, MaxPercent)) { }
 }
 

@@ -4,8 +4,9 @@ public class ConsoleStatus : ConsoleLine
 {
     private int maxWidth;
 
-    public ConsoleStatus(bool indent = false) : base(indent)
+    public ConsoleStatus()
     {
+        this.Margin = (1, 1);
     }
 
     protected override int MaxWidth => this.maxWidth;

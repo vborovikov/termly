@@ -7,12 +7,13 @@ public abstract class ConsoleLine : IDisposable
     private readonly (int Left, int Top) position;
     private SpinLock spinLock = new();
 
-    protected ConsoleLine(bool indent)
+    protected ConsoleLine()
     {
         this.IsEnabled = !Console.IsErrorRedirected;
         if (this.IsEnabled)
         {
-            this.position = (Console.CursorLeft + (indent ? 1 : 0), Console.CursorTop);
+            //todo: have global registry of currently occupied positions on the line?
+            this.position = (Console.CursorLeft, Console.CursorTop);
         }
     }
 
@@ -45,11 +46,11 @@ public abstract class ConsoleLine : IDisposable
         try
         {
             this.spinLock.Enter(ref lockTaken);
-            Console.SetCursorPosition(this.position.Left, this.position.Top);
+            Console.SetCursorPosition(this.position.Left - this.Margin.Left, this.position.Top);
 
             if (clear)
             {
-                Clear(Console.Error, this.MaxWidth);
+                Clear(Console.Error, this.MaxWidth + this.Margin.Left + this.Margin.Right);
                 Console.SetCursorPosition(this.position.Left, this.position.Top);
             }
             update(Console.Error);
