@@ -4,7 +4,7 @@ public abstract class ConsoleLine : IDisposable
 {
     private static readonly string Whitespace = new(' ', 80);
     private static readonly List<ConsoleLine> lines = [];
-    private static SpinLock spinLock = new();
+    private static SpinLock cursorLock = new();
 
     private readonly (int Left, int Top) position;
 
@@ -22,7 +22,7 @@ public abstract class ConsoleLine : IDisposable
         var lockTaken = false;
         try
         {
-            spinLock.Enter(ref lockTaken);
+            cursorLock.Enter(ref lockTaken);
             var cursorPosition = (Console.CursorLeft, Console.CursorTop);
 
             if (lines.Count > 0)
@@ -45,7 +45,7 @@ public abstract class ConsoleLine : IDisposable
         {
             if (lockTaken)
             {
-                spinLock.Exit();
+                cursorLock.Exit();
             }
         }
     }
@@ -78,7 +78,7 @@ public abstract class ConsoleLine : IDisposable
         var lockTaken = false;
         try
         {
-            spinLock.Enter(ref lockTaken);
+            cursorLock.Enter(ref lockTaken);
             Console.SetCursorPosition(this.position.Left, this.position.Top);
 
             if (clear)
@@ -92,7 +92,7 @@ public abstract class ConsoleLine : IDisposable
         {
             if (lockTaken)
             {
-                spinLock.Exit();
+                cursorLock.Exit();
             }
         }
     }
