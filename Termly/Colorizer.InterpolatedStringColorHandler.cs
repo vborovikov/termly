@@ -91,10 +91,10 @@ public static partial class Colorizer
         /// <typeparam name="T">The type of the value to write.</typeparam>
         public void AppendFormatted<T>(T value, string? format)
         {
-            if (HasColor(format, out var colorCode))
+            if (HasColor(format, out var colorCode, out var restOfFormat))
             {
                 this.handler.AppendLiteral(colorCode);
-                this.handler.AppendFormatted(value);
+                this.handler.AppendFormatted(value, restOfFormat);
                 this.handler.AppendLiteral(ResetCode);
             }
             else
@@ -121,10 +121,10 @@ public static partial class Colorizer
         /// <typeparam name="T">The type of the value to write.</typeparam>
         public void AppendFormatted<T>(T value, int alignment, string? format)
         {
-            if (HasColor(format, out var colorCode))
+            if (HasColor(format, out var colorCode, out var restOfFormat))
             {
                 this.handler.AppendLiteral(colorCode);
-                this.handler.AppendFormatted(value, alignment);
+                this.handler.AppendFormatted(value, alignment, restOfFormat);
                 this.handler.AppendLiteral(ResetCode);
             }
             else
@@ -146,10 +146,10 @@ public static partial class Colorizer
         /// <param name="format">The format string.</param>
         public void AppendFormatted(ReadOnlySpan<char> value, int alignment = 0, string? format = null)
         {
-            if (HasColor(format, out var colorCode))
+            if (HasColor(format, out var colorCode, out var restOfFormat))
             {
                 this.handler.AppendLiteral(colorCode);
-                this.handler.AppendFormatted(value, alignment);
+                this.handler.AppendFormatted(value, alignment, restOfFormat);
                 this.handler.AppendLiteral(ResetCode);
             }
             else
@@ -172,10 +172,10 @@ public static partial class Colorizer
         /// <param name="format">The format string.</param>
         public void AppendFormatted(string? value, int alignment = 0, string? format = null)
         {
-            if (HasColor(format, out var colorCode))
+            if (HasColor(format, out var colorCode, out var restOfFormat))
             {
                 this.handler.AppendLiteral(colorCode);
-                this.handler.AppendFormatted(value, alignment);
+                this.handler.AppendFormatted(value, alignment, restOfFormat);
                 this.handler.AppendLiteral(ResetCode);
             }
             else
@@ -191,10 +191,10 @@ public static partial class Colorizer
         /// <param name="format">The format string.</param>
         public void AppendFormatted(object? value, int alignment = 0, string? format = null)
         {
-            if (HasColor(format, out var colorCode))
+            if (HasColor(format, out var colorCode, out var restOfFormat))
             {
                 this.handler.AppendLiteral(colorCode);
-                this.handler.AppendFormatted(value, alignment);
+                this.handler.AppendFormatted(value, alignment, restOfFormat);
                 this.handler.AppendLiteral(ResetCode);
             }
             else
@@ -203,8 +203,10 @@ public static partial class Colorizer
             }
         }
 
-        private bool HasColor(ReadOnlySpan<char> format, [NotNullWhen(true)] out string? color)
+        private bool HasColor(ReadOnlySpan<char> format, [NotNullWhen(true)] out string? color, [MaybeNullWhen(true)] out string? restOfFormat)
         {
+            restOfFormat = null;
+
             if (!this.isEnabled || format.IsEmpty)
             {
                 color = null;
@@ -213,13 +215,18 @@ public static partial class Colorizer
 
             ConsoleColor foreground, background;
 
+            var colonPos = format.LastIndexOf(':');
+            if (colonPos > 0)
+            {
+                restOfFormat = format[..colonPos].ToString();
+                format = format[(colonPos + 1)..];
+            }
+
             var pos = format.IndexOf('|');
             if (pos > 0 &&
                 Enum.TryParse(format[..pos], true, out foreground) &&
                 Enum.TryParse(format[(pos + 1)..], true, out background))
             {
-                //todo: return the rest of format if another separator is present
-
                 color = ForegroundCodes[(int)foreground] + BackgroundCodes[(int)background];
                 return true;
             }
