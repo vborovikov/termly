@@ -23,9 +23,11 @@ using (var status = new ConsoleStatus())
 }
 Console.Error.WriteLine();
 
+using (var stopwatch = new ConsoleStopwatch { Format = @"ss\.fff", Resolution = TimeSpan.FromMilliseconds(5) })
 using (var progressBar = new ConsoleProgressBar())
 using (var percentage = new ConsoleStatus())
 {
+    stopwatch.Start();
     var progress = new Progress<int>(value =>
     {
         progressBar.Report(value);
