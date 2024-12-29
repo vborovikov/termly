@@ -1,5 +1,6 @@
 ﻿using System.Text;
 using Termly;
+using Termly.Widgets;
 
 Console.OutputEncoding = Encoding.Default;
 

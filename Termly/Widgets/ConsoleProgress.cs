@@ -1,4 +1,4 @@
-﻿namespace Termly;
+﻿namespace Termly.Widgets;
 
 using System;
 

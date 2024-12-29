@@ -1,4 +1,4 @@
-﻿namespace Termly;
+﻿namespace Termly.Widgets;
 
 public abstract class ConsoleLine : IDisposable
 {
@@ -32,7 +32,7 @@ public abstract class ConsoleLine : IDisposable
                 {
                     if (other.position.Top == cursorPosition.CursorTop)
                     {
-                        cursorPosition.CursorLeft += 
+                        cursorPosition.CursorLeft +=
                             other.position.Left + other.Margin.Left + other.MaxWidth + other.Margin.Right;
                     }
                 }
