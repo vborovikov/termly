@@ -13,17 +13,17 @@ public class ConsoleStatus : ConsoleLine
 
     public void Write(string value)
     {
-        Update(con =>
-        {
-            this.maxWidth = Math.Max(this.maxWidth, value.Length);
-            con.Write(value);
-        }, clear: true);
+        this.maxWidth = Math.Max(this.maxWidth, value.Length);
+        Update(value);
     }
 
     public void Write(ConsoleColor foreground, string value)
     {
-        Write(value.InColor(foreground)!);
+        this.maxWidth = Math.Max(this.maxWidth, value.Length);
+        Update(value.InColor(foreground)!);
     }
+
+    private void Update(string value) => Update(con => con.Write(value), clear: true);
 
     protected override void Clear()
     {

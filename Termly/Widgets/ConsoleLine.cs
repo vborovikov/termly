@@ -28,13 +28,11 @@ public abstract class ConsoleLine : IDisposable
             if (lines.Count > 0)
             {
                 cursorPosition.CursorLeft = 0;
-                foreach (var other in lines)
+                var other = lines.FindLast(ln => ln.position.Top == cursorPosition.CursorTop);
+                if (other is not null)
                 {
-                    if (other.position.Top == cursorPosition.CursorTop)
-                    {
-                        cursorPosition.CursorLeft +=
-                            other.position.Left + other.Margin.Left + other.MaxWidth + other.Margin.Right;
-                    }
+                    cursorPosition.CursorLeft =
+                        other.position.Left + other.Margin.Left + other.MaxWidth + other.Margin.Right;
                 }
             }
 
@@ -81,11 +79,18 @@ public abstract class ConsoleLine : IDisposable
             cursorLock.Enter(ref lockTaken);
             Console.SetCursorPosition(this.position.Left, this.position.Top);
 
+            Clear(Console.Error, this.Margin.Left);
             if (clear)
             {
-                Clear(Console.Error, this.MaxWidth + this.Margin.Left + this.Margin.Right);
-                Console.SetCursorPosition(this.position.Left + this.Margin.Left, this.position.Top);
+                Clear(Console.Error, this.MaxWidth);
             }
+            else
+            {
+                Console.SetCursorPosition(this.position.Left + this.Margin.Left + this.MaxWidth, this.position.Top);
+            }
+            Clear(Console.Error, this.Margin.Right);
+            Console.SetCursorPosition(this.position.Left + this.Margin.Left, this.position.Top);
+
             update(Console.Error);
         }
         finally

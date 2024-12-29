@@ -19,7 +19,7 @@ public class ConsoleStopwatch : ConsoleLine
 
     public TimeSpan Resolution { get; init; } = TimeSpan.FromSeconds(1);
 
-    protected override int MaxWidth => this.Format.Length;
+    protected override int MaxWidth => this.Format.Length - this.Format.Count(ch => ch is '\\' or '%');
 
     protected override void Clear()
     {
