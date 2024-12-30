@@ -59,7 +59,20 @@ public abstract class ConsoleLine : IDisposable
         if (this.IsEnabled)
         {
             Clear();
-            lines.Remove(this);
+
+            var lockTaken = false;
+            try
+            {
+                cursorLock.Enter(ref lockTaken);
+                lines.Remove(this);
+            }
+            finally
+            {
+                if (lockTaken)
+                {
+                    cursorLock.Exit();
+                }
+            }
         }
     }
 
