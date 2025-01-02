@@ -11,6 +11,7 @@ public static partial class Colorizer
     /// </summary>
     /// <param name="writer">The <see cref="TextWriter"/> to write colorized output to.</param>
     /// <param name="colorHandler">The <see cref="InterpolatedStringColorHandler"/> to use for colorizing output.</param>
+    [Obsolete("Use Print method instead.")]
     public static void WriteInColor(this TextWriter writer,
         [InterpolatedStringHandlerArgument(nameof(writer))] ref InterpolatedStringColorHandler colorHandler)
     {
@@ -18,11 +19,35 @@ public static partial class Colorizer
     }
 
     /// <summary>
+    /// Writes an interpolated string with colorization to a <see cref="TextWriter"/>.
+    /// </summary>
+    /// <param name="writer">The <see cref="TextWriter"/> to write colorized output to.</param>
+    /// <param name="colorHandler">The <see cref="InterpolatedStringColorHandler"/> to use for colorizing output.</param>
+    public static void Print(this TextWriter writer,
+        [InterpolatedStringHandlerArgument(nameof(writer))] ref InterpolatedStringColorHandler colorHandler)
+    {
+        writer.Write(colorHandler.ToStringAndClear());
+    }
+
+
+    /// <summary>
     /// Writes an interpolated string with colorization to a <see cref="TextWriter"/> followed by a line terminator.
     /// </summary>
     /// <param name="writer">The <see cref="TextWriter"/> to write colorized output to.</param>
     /// <param name="colorHandler">The <see cref="InterpolatedStringColorHandler"/> to use for colorizing output.</param>
+    [Obsolete("Use PrintLine method instead.")]
     public static void WriteLineInColor(this TextWriter writer,
+        [InterpolatedStringHandlerArgument(nameof(writer))] ref InterpolatedStringColorHandler colorHandler)
+    {
+        writer.WriteLine(colorHandler.ToStringAndClear());
+    }
+
+    /// <summary>
+    /// Writes an interpolated string with colorization to a <see cref="TextWriter"/> followed by a line terminator.
+    /// </summary>
+    /// <param name="writer">The <see cref="TextWriter"/> to write colorized output to.</param>
+    /// <param name="colorHandler">The <see cref="InterpolatedStringColorHandler"/> to use for colorizing output.</param>
+    public static void PrintLine(this TextWriter writer,
         [InterpolatedStringHandlerArgument(nameof(writer))] ref InterpolatedStringColorHandler colorHandler)
     {
         writer.WriteLine(colorHandler.ToStringAndClear());
@@ -68,7 +93,7 @@ public static partial class Colorizer
 
         /// <summary>Gets the built <see cref="string"/> and clears the handler.</summary>
         /// <returns>The built string.</returns>
-        internal ReadOnlySpan<char> ToStringAndClear() => this.handler.ToStringAndClear();
+        public string ToStringAndClear() => this.handler.ToStringAndClear();
 
         /// <summary>Writes the specified string to the handler.</summary>
         /// <param name="value">The string to write.</param>
