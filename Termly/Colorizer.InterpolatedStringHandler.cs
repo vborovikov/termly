@@ -11,6 +11,57 @@ public static partial class Colorizer
     /// <param name="writer">The <see cref="TextWriter"/> to write the colored string to.</param>
     /// <param name="foreground">The foreground color to use for the string.</param>
     /// <param name="colorHandler">The interpolated string handler that contains the string to write.</param>
+    public static void Print(this TextWriter writer, ConsoleColor foreground,
+        [InterpolatedStringHandlerArgument(nameof(writer), nameof(foreground))] ref InterpolatedStringHandler colorHandler)
+    {
+        writer.Write(colorHandler.ToStringAndClear());
+    }
+
+    /// <summary>
+    /// Writes an interpolated string with the specified foreground and background colors to the given <see cref="TextWriter"/>.
+    /// </summary>
+    /// <param name="writer">The <see cref="TextWriter"/> to write the colored string to.</param>
+    /// <param name="foreground">The foreground color to use for the string.</param>
+    /// <param name="background">The background color to use for the string.</param>
+    /// <param name="colorHandler">The interpolated string handler that contains the string to write.</param>
+    public static void Print(this TextWriter writer, ConsoleColor foreground, ConsoleColor background,
+        [InterpolatedStringHandlerArgument(nameof(writer), nameof(foreground), nameof(background))] ref InterpolatedStringHandler colorHandler)
+    {
+        writer.Write(colorHandler.ToStringAndClear());
+    }
+
+    /// <summary>
+    /// Writes an interpolated string with the specified foreground color followed by a line terminator to the given <see cref="TextWriter"/>.
+    /// </summary>
+    /// <param name="writer">The <see cref="TextWriter"/> to write the colored string to.</param>
+    /// <param name="foreground">The foreground color to use for the string.</param>
+    /// <param name="colorHandler">The interpolated string handler that contains the string to write.</param>
+    public static void PrintLine(this TextWriter writer, ConsoleColor foreground,
+        [InterpolatedStringHandlerArgument(nameof(writer), nameof(foreground))] ref InterpolatedStringHandler colorHandler)
+    {
+        writer.WriteLine(colorHandler.ToStringAndClear());
+    }
+
+    /// <summary>
+    /// Writes an interpolated string with the specified foreground and background colors followed by a line terminator to the given <see cref="TextWriter"/>.
+    /// </summary>
+    /// <param name="writer">The <see cref="TextWriter"/> to write the colored string to.</param>
+    /// <param name="foreground">The foreground color to use for the string.</param>
+    /// <param name="background">The background color to use for the string.</param>
+    /// <param name="colorHandler">The interpolated string handler that contains the string to write.</param>
+    public static void PrintLine(this TextWriter writer, ConsoleColor foreground, ConsoleColor background,
+        [InterpolatedStringHandlerArgument(nameof(writer), nameof(foreground), nameof(background))] ref InterpolatedStringHandler colorHandler)
+    {
+        writer.WriteLine(colorHandler.ToStringAndClear());
+    }
+
+    /// <summary>
+    /// Writes an interpolated string with the specified foreground color to the given <see cref="TextWriter"/>.
+    /// </summary>
+    /// <param name="writer">The <see cref="TextWriter"/> to write the colored string to.</param>
+    /// <param name="foreground">The foreground color to use for the string.</param>
+    /// <param name="colorHandler">The interpolated string handler that contains the string to write.</param>
+    [Obsolete("Use Print method instead.")]
     public static void Write(this TextWriter writer, ConsoleColor foreground,
         [InterpolatedStringHandlerArgument(nameof(writer), nameof(foreground))] ref InterpolatedStringHandler colorHandler)
     {
@@ -24,6 +75,7 @@ public static partial class Colorizer
     /// <param name="foreground">The foreground color to use for the string.</param>
     /// <param name="background">The background color to use for the string.</param>
     /// <param name="colorHandler">The interpolated string handler that contains the string to write.</param>
+    [Obsolete("Use Print method instead.")]
     public static void Write(this TextWriter writer, ConsoleColor foreground, ConsoleColor background,
         [InterpolatedStringHandlerArgument(nameof(writer), nameof(foreground), nameof(background))] ref InterpolatedStringHandler colorHandler)
     {
@@ -36,6 +88,7 @@ public static partial class Colorizer
     /// <param name="writer">The <see cref="TextWriter"/> to write the colored string to.</param>
     /// <param name="foreground">The foreground color to use for the string.</param>
     /// <param name="colorHandler">The interpolated string handler that contains the string to write.</param>
+    [Obsolete("Use PrintLine method instead.")]
     public static void WriteLine(this TextWriter writer, ConsoleColor foreground,
         [InterpolatedStringHandlerArgument(nameof(writer), nameof(foreground))] ref InterpolatedStringHandler colorHandler)
     {
@@ -49,6 +102,7 @@ public static partial class Colorizer
     /// <param name="foreground">The foreground color to use for the string.</param>
     /// <param name="background">The background color to use for the string.</param>
     /// <param name="colorHandler">The interpolated string handler that contains the string to write.</param>
+    [Obsolete("Use PrintLine method instead.")]
     public static void WriteLine(this TextWriter writer, ConsoleColor foreground, ConsoleColor background,
         [InterpolatedStringHandlerArgument(nameof(writer), nameof(foreground), nameof(background))] ref InterpolatedStringHandler colorHandler)
     {
@@ -131,7 +185,7 @@ public static partial class Colorizer
 
         /// <summary>Gets the built <see cref="string"/> and clears the handler.</summary>
         /// <returns>The built string.</returns>
-        internal ReadOnlySpan<char> ToStringAndClear() => this.handler.ToStringAndClear();
+        public string ToStringAndClear() => this.handler.ToStringAndClear();
 
         /// <summary>Writes the specified string to the handler.</summary>
         /// <param name="value">The string to write.</param>
