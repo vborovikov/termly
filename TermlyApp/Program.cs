@@ -2,6 +2,9 @@
 using Termly;
 using Termly.Widgets;
 
+Console.OutputEncoding = Encoding.Default;
+Console.InputEncoding = Encoding.Default;
+
 Console.Out.PrintLine($"{"Hello":blue}, {"World":white|green}!");
 Console.Error.PrintLine(ConsoleColor.Red, $"{"Hello":x}, {"World":x}!");
 Console.Out.PrintLine($"{12345.67:N2:cyan}");
